@@ -1,4 +1,5 @@
-# IndianClassicalMusicEditor
+# Indian Classical Music Editor
+Google Docs based Editor for Indian Classical Music.
 
 ## Requirements
 Python 2.6+ or 3+
