@@ -2,9 +2,10 @@
 
 import wx, wx.html
 import sys
+import MusicEditor as ME
 
 aboutText = """<p>This is a Google Docs based editor for Indian Classical Music.
-See <a href="https://github.com/sarthakkaingade/IndianClassicalMusicEditor"> ICM Editor Github Repository</a>  for details.</p>""" 
+See <a href="https://github.com/sarthakkaingade/IndianClassicalMusicEditor"> ICM Editor Github Repository</a>  for details.</p>"""
 
 class HtmlWindow(wx.html.HtmlWindow):
     def __init__(self, parent, id, size=(600,400)):
@@ -14,7 +15,7 @@ class HtmlWindow(wx.html.HtmlWindow):
 
     def OnLinkClicked(self, link):
         wx.LaunchDefaultBrowser(link.GetHref())
-        
+
 class AboutBox(wx.Dialog):
     def __init__(self):
         wx.Dialog.__init__(self, None, -1, "About ICM Editor", style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|wx.TAB_TRAVERSAL)
@@ -82,8 +83,6 @@ class NewFileDialog(wx.Dialog):
         self.taalName = self.taalNameChoice.GetString( self.taalNameChoice.GetSelection() )
         return [self.fileName, self.taalName]
 
-    
-    
 class Frame(wx.Frame):
     def __init__(self, title):
         displaySize= wx.DisplaySize()
@@ -119,6 +118,8 @@ class Frame(wx.Frame):
         m_close.Bind(wx.EVT_BUTTON, self.OnClose)
         box.Add(m_close, 0, wx.ALL, 10)
         
+        self.ICME = ME.MusicEditor()
+
         panel.SetSizer(box)
         panel.Layout()
 
@@ -129,6 +130,7 @@ class Frame(wx.Frame):
             [fileName, taalName] = dlg.GetNewFileData()
             print fileName
             print taalName
+            self.ICME.NewSheet(fileName,taalName)
         dlg.Destroy()
 
     def OnOpen(self, event):

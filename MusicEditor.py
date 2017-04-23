@@ -5,7 +5,7 @@ class MusicEditor:
 	def __init__(self):
 		self.gc = pygsheets.authorize()
 		print("ICM: Authorized Music Editor")
-		self.templateSheets = {'Trital' : "https://docs.google.com/spreadsheets/d/1cN9ycjisj1KM2muyoCYUBs1oqpKCz80821GwUghzgrc/"}
+		self.templateSheets = {'Tritaal' : "https://docs.google.com/spreadsheets/d/1cN9ycjisj1KM2muyoCYUBs1oqpKCz80821GwUghzgrc/"}
 
 	def NewSheet(self,fileName,taalName):
 		targetSpreadSheet = self.gc.create(fileName)
