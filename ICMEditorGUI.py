@@ -2,6 +2,7 @@
 
 import wx, wx.html
 import sys
+import webbrowser
 import MusicEditor as ME
 
 aboutText = """<p>This is a Google Docs based editor for Indian Classical Music.
@@ -134,6 +135,7 @@ class Frame(wx.Frame):
         dlg.Destroy()
 
     def OnOpen(self, event):
+        webbrowser.open("https://drive.google.com/drive/my-drive")
         return
 
     def OnClose(self, event):
