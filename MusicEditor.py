@@ -6,8 +6,16 @@ class MusicEditor:
 		self.gc = pygsheets.authorize()
 		print("ICM: Authorized Music Editor")
 		self.templateSheets = {'Tritaal' : "https://docs.google.com/spreadsheets/d/1cN9ycjisj1KM2muyoCYUBs1oqpKCz80821GwUghzgrc/"}
-		folder = self.gc.driveService.files().create(body={'name' : 'ICME','mimeType' : 'application/vnd.google-apps.folder'},fields='id').execute()
-		self.folderID = folder.get('id')
+		folders = self.gc.driveService.files().list(q="mimeType='application/vnd.google-apps.folder'",fields="files(id,name)").execute()
+		foldersList = folders.get('files',[])
+		self.folderID = ''
+		if len(foldersList) != 0:
+			folderID = [x['id'] for x in foldersList if x['name'] == "ICME"]
+			if len(folderID) != 0:
+				self.folderID = folderID[0]
+		if len(self.folderID) == 0:
+			folder = self.gc.driveService.files().create(body={'name' : 'ICME','mimeType' : 'application/vnd.google-apps.folder'},fields='id').execute()
+			self.folderID = folder.get('id')
 
 	def NewSheet(self,fileName,taalName):
 		targetSpreadSheet = self.gc.create(fileName)
