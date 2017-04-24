@@ -135,7 +135,7 @@ class Frame(wx.Frame):
         dlg.Destroy()
 
     def OnOpen(self, event):
-        webbrowser.open("https://drive.google.com/drive/my-drive")
+        webbrowser.open("https://drive.google.com/drive/folders/" + self.ICME.folderID + "/")
         return
 
     def OnClose(self, event):
