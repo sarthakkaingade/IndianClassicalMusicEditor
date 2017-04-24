@@ -84,7 +84,7 @@ class NewFileDialog(wx.Dialog):
         self.taalName = self.taalNameChoice.GetString( self.taalNameChoice.GetSelection() )
         return [self.fileName, self.taalName]
 
-class Frame(wx.Frame):
+class ICME_GUI(wx.Frame):
     def __init__(self, title):
         displaySize= wx.DisplaySize()
         wx.Frame.__init__(self, None, title=title, size=(displaySize[0]/2, displaySize[1]/2))
@@ -152,7 +152,34 @@ class Frame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()  
 
+    def GenerateLatexScriptData(self, taalName, data):   #TODO : Generalize and move to Latex class
+        #numBols = 16
+        taalLines = 2
+		taalTable = "\\begin{center}\n\n\t\\begin{longtabu} to \\textwidth{X X X X X X X X X X}\n\n\t\tNOTATION\n\n\t\end{longtabu}\n\n\end{center}"
+		taalTemplate = [['']*10, ['$\\boldsymbol(\\times)$', ' ', ' ', ' ', '|', '2', ' ', ' ', ' ', '|'], ['']*10, ['$\\boldsymbol(\\circ)$', ' ', ' ', ' ', '|', '3', ' ', ' ', ' ', '|']]
+
+		notation = []
+		for (i,row) in enumerate(data):
+			if (i%taalLines == 0):
+				notation = notation + taalTemplate
+
+			notation[2*i] = row
+
+		dataNotationString = ""
+		for (i,row) in enumerate(notation):        
+				dataNotationString += ' & '.join(row)   #TODO : Strip spaces?
+				dataNotationString += ' \\\ \n\t\t'
+				
+		dataNotation = taalTable.replace("NOTATION", dataNotationString)
+		
+		with open('docTemplate.tex', 'r') as myfile:
+			scriptData = myfile.read()
+        
+		scriptData = scriptData.replace("NOTATION", dataNotation)
+		
+		return scriptData
+        
 app = wx.App(redirect=True)   # Error messages go to popup window
-top = Frame("ICM Editor")
+top = ICME_GUI("ICM Editor")
 top.Show()
 app.MainLoop()
