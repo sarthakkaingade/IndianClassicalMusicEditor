@@ -127,14 +127,15 @@ class ICME_GUI(wx.Frame):
 
         self.listCtrlFiles = wx.ListCtrl(panel, size=(100,-1), style = wx.LC_REPORT)
         self.listCtrlFiles.InsertColumn(0, "File Name", width=wx.LIST_AUTOSIZE_USEHEADER)
+        self.listCtrlIndex = 0
         vbox2.Add(self.listCtrlFiles, 1, wx.EXPAND)
-        self.UpdateListCtrl()
 
         hbox.Add(vbox1, 1, wx.EXPAND)
         hbox.Add(vbox2, 1, wx.EXPAND)
         
         self.ICME = ME.MusicEditor()
-
+        self.UpdateListCtrl()
+        
         panel.SetSizer(hbox)
         #panel.SetSizerAndFit(hbox)
         panel.Layout()
@@ -171,13 +172,29 @@ class ICME_GUI(wx.Frame):
     def UpdateListCtrl(self):
         fileNames = self.ICME.GetSheets(self.ICME.folderID)
         for name in fileNames:
-            self.listCtrlFiles.Append(name)
+            #print name
+            self.listCtrlFiles.InsertStringItem(self.listCtrlIndex, name)
+            self.listCtrlIndex += 1
         self.listCtrlFiles.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)        
         
     def OnGeneratePDF(self, event):
-        pass
-    
-    def GenerateLatexScriptData(self, taalName, data):   #TODO : Generalize and move to Latex class
+        if(self.listCtrlFiles.GetFirstSelected() == -1):
+            d= wx.MessageDialog( self, "Please select the files for PDF generation from the list.", "Error", wx.ICON_INFORMATION|wx.OK)
+            d.ShowModal()
+            d.Destroy()
+            return
+
+        selected_items = [self.listCtrlFiles.GetFirstSelected()]
+        index = self.listCtrlFiles.GetNextSelected(selected_items[0])
+        while(index != -1):
+            selected_items.append(index)
+            index = self.listCtrlFiles.GetNextSelected(index)
+
+        for index in selected_items:
+            data, taalName = self.ICME.GetDataFromSheet(self.listCtrlFiles.GetItemText(index))
+            latexScriptData = self.GenerateLatexScriptData(data, taalName)
+            
+    def GenerateLatexScriptData(self, data, taalName):   #TODO : Generalize and move to Latex class
         #numBols = 16
         taalLines = 2
 	taalTable = "\\begin{center}\n\n\t\\begin{longtabu} to \\textwidth{X X X X X X X X X X}\n\n\t\tNOTATION\n\n\t\end{longtabu}\n\n\end{center}"
