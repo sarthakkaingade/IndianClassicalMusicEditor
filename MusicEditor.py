@@ -16,6 +16,8 @@ class MusicEditor:
 		if len(self.folderID) == 0:
 			folder = self.gc.driveService.files().create(body={'name' : 'ICME','mimeType' : 'application/vnd.google-apps.folder'},fields='id').execute()
 			self.folderID = folder.get('id')
+		files = self.gc.driveService.files().list(q = "'" + self.folderID + "'" + " in parents",fields="files(id,name)").execute()
+		self.filesICME = files.get('files',[])
 
 	def NewSheet(self,fileName,taalName):
 		targetSpreadSheet = self.gc.create(fileName)
@@ -29,13 +31,20 @@ class MusicEditor:
 		webbrowser.open("https://docs.google.com/spreadsheets/d/" + targetSpreadSheet.id + "/")
 
 	def GetSheets(self,folderID):
-		folderfiles = self.gc.driveService.files().list(q = "'" + folderID + "'" + " in parents",fields="files(id,name)").execute()
-		folderfilesList = folderfiles.get('files',[])
-		return [x['name'] for x in folderfilesList]
+		files = self.gc.driveService.files().list(q = "'" + folderID + "'" + " in parents",fields="files(id,name)").execute()
+		self.filesICME = files.get('files',[])
+		return [x['name'] for x in self.filesICME]
+
+	def GetDataFromSheet(self,sheetName):
+		fileIDList = [x['id'] for x in self.filesICME if x['name'] == sheetName]
+		if len(fileIDList) != 0:
+			fileID = fileIDList[0]
+		sh = self.gc.open_by_key(fileID)
+		wks = sh.worksheet('index',0)
+		return wks.get_all_values(), wks.title
 
 if __name__ == '__main__':
 	ICME = MusicEditor()
 	#ICME.NewSheet(fileName="MyTaal",taalName="Tritaal")
-	#a = ICME.GetSheets(ICME.folderID)
-	#print(a)
+	print(ICME.GetSheets(ICME.folderID))
 
