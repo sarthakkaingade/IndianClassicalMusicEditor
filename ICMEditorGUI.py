@@ -91,37 +91,52 @@ class ICME_GUI(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
         menuBar = wx.MenuBar()
-        menu = wx.Menu()
-        m_new = menu.Append(wx.ID_NEW, "New\tCtrl-N", "Create a new notation file.")
-        m_open = menu.Append(wx.ID_OPEN, "Open\tCtrl-O", "Open an existing notation file.")
-        m_exit = menu.Append(wx.ID_EXIT, "Exit\tAlt-X", "Close window and exit program.")
-        self.Bind(wx.EVT_MENU, self.OnNew, m_new)
-        self.Bind(wx.EVT_MENU, self.OnOpen, m_open)
-        self.Bind(wx.EVT_MENU, self.OnClose, m_exit)
-        menuBar.Append(menu, "&File")
-        menu = wx.Menu()
-        m_about = menu.Append(wx.ID_ABOUT, "&About", "Information about this program")
-        self.Bind(wx.EVT_MENU, self.OnAbout, m_about)
-        menuBar.Append(menu, "&Help")
+        menuFile = wx.Menu()
+        itemNew = menuFile.Append(wx.ID_NEW, "New\tCtrl-N", "Create a new notation file.")
+        itemOpen = menuFile.Append(wx.ID_OPEN, "Open\tCtrl-O", "Open an existing notation file.")
+        itemExit = menuFile.Append(wx.ID_EXIT, "Exit\tAlt-X", "Close window and exit program.")
+        self.Bind(wx.EVT_MENU, self.OnNew, itemNew)
+        self.Bind(wx.EVT_MENU, self.OnOpen, itemOpen)
+        self.Bind(wx.EVT_MENU, self.OnClose, itemExit)
+        menuBar.Append(menuFile, "&File")
+        menuHelp = wx.Menu()
+        itemAbout = menuHelp.Append(wx.ID_ABOUT, "&About", "Information about this program")
+        self.Bind(wx.EVT_MENU, self.OnAbout, itemAbout)
+        menuBar.Append(menuHelp, "&Help")
         self.SetMenuBar(menuBar)
         
         self.statusbar = self.CreateStatusBar()
 
         panel = wx.Panel(self)
-        box = wx.BoxSizer(wx.VERTICAL)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        vbox1 = wx.BoxSizer(wx.VERTICAL)
+        vbox2 = wx.BoxSizer(wx.VERTICAL)
         
-        m_text = wx.StaticText(panel, -1, "ICM Editor!")
-        m_text.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
-        m_text.SetSize(m_text.GetBestSize())
-        box.Add(m_text, 0, wx.ALL, 10)
+        itemText = wx.StaticText(panel, -1, "ICM Editor!")
+        itemText.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
+        itemText.SetSize(itemText.GetBestSize())
+        vbox1.Add(itemText, 0, wx.ALL, 10)
         
-        m_close = wx.Button(panel, wx.ID_CLOSE, "Close")
-        m_close.Bind(wx.EVT_BUTTON, self.OnClose)
-        box.Add(m_close, 0, wx.ALL, 10)
+        buttonClose = wx.Button(panel, wx.ID_CLOSE, "Close")
+        buttonClose.Bind(wx.EVT_BUTTON, self.OnClose)
+        vbox1.Add(buttonClose, 0, wx.ALL, 10)
+
+        buttonGeneratePDF = wx.Button(panel, -1, "Generate PDF")
+        buttonGeneratePDF.Bind(wx.EVT_BUTTON, self.OnGeneratePDF)
+        vbox1.Add(buttonGeneratePDF, 0, wx.ALL, 10)
+
+        self.listCtrlFiles = wx.ListCtrl(panel, size=(100,-1), style = wx.LC_REPORT)
+        self.listCtrlFiles.InsertColumn(0, "File Name", width=wx.LIST_AUTOSIZE_USEHEADER)
+        vbox2.Add(self.listCtrlFiles, 1, wx.EXPAND)
+        self.UpdateListCtrl()
+
+        hbox.Add(vbox1, 1, wx.EXPAND)
+        hbox.Add(vbox2, 1, wx.EXPAND)
         
         self.ICME = ME.MusicEditor()
 
-        panel.SetSizer(box)
+        panel.SetSizer(hbox)
+        #panel.SetSizerAndFit(hbox)
         panel.Layout()
 
     def OnNew(self, event):
@@ -133,7 +148,8 @@ class ICME_GUI(wx.Frame):
             print taalName
             self.ICME.NewSheet(fileName,taalName)
         dlg.Destroy()
-
+        self.UpdateListCtrl()
+        
     def OnOpen(self, event):
         webbrowser.open("https://drive.google.com/drive/folders/" + self.ICME.folderID + "/")
         return
@@ -152,32 +168,41 @@ class ICME_GUI(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()  
 
+    def UpdateListCtrl(self):
+        fileNames = self.ICME.GetSheets(self.ICME.folderID)
+        for name in fileNames:
+            self.listCtrlFiles.Append(name)
+        self.listCtrlFiles.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)        
+        
+    def OnGeneratePDF(self, event):
+        pass
+    
     def GenerateLatexScriptData(self, taalName, data):   #TODO : Generalize and move to Latex class
         #numBols = 16
         taalLines = 2
-		taalTable = "\\begin{center}\n\n\t\\begin{longtabu} to \\textwidth{X X X X X X X X X X}\n\n\t\tNOTATION\n\n\t\end{longtabu}\n\n\end{center}"
-		taalTemplate = [['']*10, ['$\\boldsymbol(\\times)$', ' ', ' ', ' ', '|', '2', ' ', ' ', ' ', '|'], ['']*10, ['$\\boldsymbol(\\circ)$', ' ', ' ', ' ', '|', '3', ' ', ' ', ' ', '|']]
+	taalTable = "\\begin{center}\n\n\t\\begin{longtabu} to \\textwidth{X X X X X X X X X X}\n\n\t\tNOTATION\n\n\t\end{longtabu}\n\n\end{center}"
+	taalTemplate = [['']*10, ['$\\boldsymbol(\\times)$', ' ', ' ', ' ', '|', '2', ' ', ' ', ' ', '|'], ['']*10, ['$\\boldsymbol(\\circ)$', ' ', ' ', ' ', '|', '3', ' ', ' ', ' ', '|']]
 
-		notation = []
-		for (i,row) in enumerate(data):
-			if (i%taalLines == 0):
-				notation = notation + taalTemplate
-
-			notation[2*i] = row
-
-		dataNotationString = ""
-		for (i,row) in enumerate(notation):        
-				dataNotationString += ' & '.join(row)   #TODO : Strip spaces?
-				dataNotationString += ' \\\ \n\t\t'
-				
-		dataNotation = taalTable.replace("NOTATION", dataNotationString)
+	notation = []
+	for (i,row) in enumerate(data):
+	    if (i%taalLines == 0):
+		notation = notation + taalTemplate
+                
+		notation[2*i] = row
+                
+	dataNotationString = ""
+	for (i,row) in enumerate(notation):        
+	    dataNotationString += ' & '.join(row)   #TODO : Strip spaces?
+	    dataNotationString += ' \\\ \n\t\t'
+		    
+	dataNotation = taalTable.replace("NOTATION", dataNotationString)
 		
-		with open('docTemplate.tex', 'r') as myfile:
-			scriptData = myfile.read()
+        with open('docTemplate.tex', 'r') as myfile:
+	    scriptData = myfile.read()
         
-		scriptData = scriptData.replace("NOTATION", dataNotation)
-		
-		return scriptData
+	scriptData = scriptData.replace("NOTATION", dataNotation)
+    
+	return scriptData
         
 app = wx.App(redirect=True)   # Error messages go to popup window
 top = ICME_GUI("ICM Editor")
