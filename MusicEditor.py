@@ -28,7 +28,14 @@ class MusicEditor:
 		print("ICM: Created New Sheet")
 		webbrowser.open("https://docs.google.com/spreadsheets/d/" + targetSpreadSheet.id + "/")
 
+	def GetSheets(self,folderID):
+		folderfiles = self.gc.driveService.files().list(q = "'" + folderID + "'" + " in parents",fields="files(id,name)").execute()
+		folderfilesList = folderfiles.get('files',[])
+		return [x['name'] for x in folderfilesList]
+
 if __name__ == '__main__':
 	ICME = MusicEditor()
-	ICME.NewSheet(fileName="MyTaal",taalName="Trital")
+	#ICME.NewSheet(fileName="MyTaal",taalName="Tritaal")
+	#a = ICME.GetSheets(ICME.folderID)
+	#print(a)
 
