@@ -171,6 +171,7 @@ class ICME_GUI(wx.Frame):
 
     def UpdateListCtrl(self):
         fileNames = self.ICME.GetSheets(self.ICME.folderID)
+        self.listCtrlFiles.DeleteAllItems()
         for name in fileNames:
             #print name
             self.listCtrlFiles.InsertStringItem(self.listCtrlIndex, name)

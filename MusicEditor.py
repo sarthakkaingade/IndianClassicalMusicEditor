@@ -22,11 +22,14 @@ class MusicEditor:
 	def NewSheet(self,fileName,taalName):
 		targetSpreadSheet = self.gc.create(fileName)
 		sourceSpreadSheet = self.gc.open_by_url(self.templateSheets[taalName])
-		targetSpreadSheet.add_worksheet(taalName,src_worksheet=sourceSpreadSheet.sheet1)
+		wks = targetSpreadSheet.add_worksheet(taalName,src_worksheet=sourceSpreadSheet.sheet1)
 		targetSpreadSheet.del_worksheet(targetSpreadSheet.sheet1)
 		file = self.gc.driveService.files().get(fileId=targetSpreadSheet.id,fields='parents').execute()
 		previous_parents = ",".join(file.get('parents'))
 		file = self.gc.driveService.files().update(fileId=targetSpreadSheet.id,addParents=self.folderID,removeParents=previous_parents,fields='id, parents').execute()
+		#requests = []	#ToDo - Rethink if we want to have protected cells
+		#requests.append({ "addProtectedRange" : { "protectedRange" : { "range" : { "sheetId": wks.id, "startRowIndex" : 0, "endRowIndex" : 1, "startColumnIndex" : 1, "endColumnIndex" : 10,}, "description" : "abcd", "warningOnly" : True}}})
+		#self.gc.sh_batch_update(targetSpreadSheet.id,requests)
 		print("ICM: Created New Sheet")
 		webbrowser.open("https://docs.google.com/spreadsheets/d/" + targetSpreadSheet.id + "/")
 
@@ -41,7 +44,12 @@ class MusicEditor:
 			fileID = fileIDList[0]
 		sh = self.gc.open_by_key(fileID)
 		wks = sh.worksheet('index',0)
-		return wks.get_all_values(), wks.title
+		data = wks.get_all_values()
+		if len(data) > 1:
+			filteredData = [data[x] for x in range(1,len(data),3) if ''.join(list(set(data[x]))) != u'\u0964']
+		else:
+			filterData = []
+		return filteredData, wks.title
 
 if __name__ == '__main__':
 	ICME = MusicEditor()
