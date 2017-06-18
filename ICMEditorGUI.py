@@ -2,8 +2,10 @@
 
 import wx, wx.html
 import sys
+from subprocess import call
 import webbrowser
 import MusicEditor as ME
+import LatexHandler as LH
 
 aboutText = """<p>This is a Google Docs based editor for Indian Classical Music.
 See <a href="https://github.com/sarthakkaingade/IndianClassicalMusicEditor"> ICM Editor Github Repository</a>  for details.</p>"""
@@ -135,6 +137,7 @@ class ICME_GUI(wx.Frame):
         
         self.ICME = ME.MusicEditor()
         self.UpdateListCtrl()
+        self.LatexHandler = LH.LatexHandler()
         
         panel.SetSizer(hbox)
         #panel.SetSizerAndFit(hbox)
@@ -193,37 +196,11 @@ class ICME_GUI(wx.Frame):
 
         for index in selected_items:
             data, taalName = self.ICME.GetDataFromSheet(self.listCtrlFiles.GetItemText(index))
-            latexScriptData = self.GenerateLatexScriptData(data, taalName)
+            print taalName
+            latexScriptData = self.LatexHandler.GenerateLatexScriptData(data, taalName)
             with open('../testFile.tex', 'w') as file:
                 file.write(latexScriptData)
-            
-            
-    def GenerateLatexScriptData(self, data, taalName):   #TODO : Generalize and move to Latex class
-        #numBols = 16
-        taalLines = 2
-	taalTable = "\\begin{center}\n\n\t\\begin{longtabu} to \\textwidth{X X X X X X X X X X}\n\n\t\tNOTATION\n\n\t\end{longtabu}\n\n\end{center}"
-	taalTemplate = [['']*10, ['$\\boldsymbol(\\times)$', ' ', ' ', ' ', '|', '2', ' ', ' ', ' ', '|'], ['']*10, ['$\\boldsymbol(\\circ)$', ' ', ' ', ' ', '|', '3', ' ', ' ', ' ', '|']]
-
-	notation = []
-	for (i,row) in enumerate(data):
-	    if (i%taalLines == 0):
-		notation = notation + taalTemplate
-                
-		notation[2*i] = row
-                
-	dataNotationString = ""
-	for (i,row) in enumerate(notation):        
-	    dataNotationString += ' & '.join(row).encode('utf-8')   #TODO : Strip spaces?
-	    dataNotationString += ' \\\ \n\t\t'
-		    
-	dataNotation = taalTable.replace("NOTATION", dataNotationString)
-		
-        with open('../docTemplate.tex', 'r') as myfile:
-	    scriptData = myfile.read()
-        
-	scriptData = scriptData.replace("NOTATION", dataNotation)
-    
-	return scriptData
+        call("xelatex.exe -synctex=1 -interaction=nonstopmode -output-directory=../ \"../testFile\".tex")                        
         
 app = wx.App(redirect=True)   # Error messages go to popup window
 top = ICME_GUI("ICM Editor")
