@@ -193,6 +193,9 @@ class ICME_GUI(wx.Frame):
         for index in selected_items:
             data, taalName = self.ICME.GetDataFromSheet(self.listCtrlFiles.GetItemText(index))
             latexScriptData = self.GenerateLatexScriptData(data, taalName)
+            with open('../testFile.tex', 'w') as file:
+                file.write(latexScriptData)
+            
             
     def GenerateLatexScriptData(self, data, taalName):   #TODO : Generalize and move to Latex class
         #numBols = 16
@@ -209,12 +212,12 @@ class ICME_GUI(wx.Frame):
                 
 	dataNotationString = ""
 	for (i,row) in enumerate(notation):        
-	    dataNotationString += ' & '.join(row)   #TODO : Strip spaces?
+	    dataNotationString += ' & '.join(row).encode('utf-8')   #TODO : Strip spaces?
 	    dataNotationString += ' \\\ \n\t\t'
 		    
 	dataNotation = taalTable.replace("NOTATION", dataNotationString)
 		
-        with open('docTemplate.tex', 'r') as myfile:
+        with open('../docTemplate.tex', 'r') as myfile:
 	    scriptData = myfile.read()
         
 	scriptData = scriptData.replace("NOTATION", dataNotation)
