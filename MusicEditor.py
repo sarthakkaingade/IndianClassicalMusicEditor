@@ -42,14 +42,24 @@ class MusicEditor:
 		fileIDList = [x['id'] for x in self.filesICME if x['name'] == sheetName]
 		if len(fileIDList) != 0:
 			fileID = fileIDList[0]
+                else:
+                        return [],[]
 		sh = self.gc.open_by_key(fileID)
 		wks = sh.worksheet('index',0)
 		data = wks.get_all_values()
-		if len(data) > 1:
-			filteredData = [data[x] for x in range(1,len(data),3) if ''.join(list(set(data[x]))) != u'\u0964']
-		else:
-			filterData = []
-		return filteredData, wks.title
+                data = [x for (i,x) in enumerate(data) if (i%4 !=0)]
+                symbol_set = set([u'\u0964', 'x', 'o', '1', '2', '3', '4', '5', '6', '7', '8', '9', '', ' '])
+                for i in range(len(data)-1,0,-1):             # Finding where the composition ends
+                        if bool(set(data[i]) - symbol_set):
+                                print str(i)
+                                print data[i]
+                                break
+                filteredData = data[0:i+2]                #To get the symbols below the last line of the composition
+		#if len(data) > 1:
+		#	filteredData = [x for (i,x) in enumerate(data) if (i%4 != 0)]
+		#else:
+		#	filteredData = []
+                return filteredData, wks.title
 
 if __name__ == '__main__':
 	ICME = MusicEditor()
