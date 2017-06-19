@@ -199,12 +199,21 @@ class ICME_GUI(wx.Frame):
             index = self.listCtrlFiles.GetNextSelected(index)
 
         for index in selected_items:
+            if self.listCtrlFiles.GetItemText(index) not in self.ICME.GetSheets(self.ICME.folderID):
+                d = wx.MessageDialog( self, "File " + self.listCtrlFiles.GetItemText(index) + " is not present on Google Drive", "Error", wx.ICON_INFORMATION|wx.OK)
+                d.ShowModal()
+                d.Destroy()
+                self.UpdateListCtrl()
+                return
             data, taalName = self.ICME.GetDataFromSheet(self.listCtrlFiles.GetItemText(index))
-            print taalName
+            if len(taalName) == 0:
+                return
             latexScriptData = self.LatexHandler.GenerateLatexScriptData(data, taalName)
             with open('../testFile.tex', 'w') as file:
                 file.write(latexScriptData)
-        call("xelatex -synctex=1 -interaction=nonstopmode -output-directory=" + dlg.GetPath() + " ../testFile.tex")
+            call("xelatex -synctex=1 -interaction=nonstopmode -output-directory=" + dlg.GetPath() + " -jobname=" + self.listCtrlFiles.GetItemText(index) + " ../testFile.tex",shell=True)
+            call("rm -f " + dlg.GetPath() + "/" + self.listCtrlFiles.GetItemText(index) + ".aux " + dlg.GetPath() + "/" + self.listCtrlFiles.GetItemText(index) + ".log " + dlg.GetPath() + "/" + self.listCtrlFiles.GetItemText(index) + ".synctex.gz",shell=True)
+            #call("find " + dlg.GetPath() + " -type f -not -name '*pdf' -print0 | xargs -0 rm --",shell=True) #Risky approach to delete all files except the pdf files
         
 app = wx.App(redirect=True)   # Error messages go to popup window
 top = ICME_GUI("ICM Editor")
