@@ -188,6 +188,10 @@ class ICME_GUI(wx.Frame):
             d.Destroy()
             return
 
+        dlg = wx.DirDialog (None, "Choose the directory to store PDF files", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+        if dlg.ShowModal() == wx.ID_CANCEL:
+            return
+
         selected_items = [self.listCtrlFiles.GetFirstSelected()]
         index = self.listCtrlFiles.GetNextSelected(selected_items[0])
         while(index != -1):
@@ -200,7 +204,7 @@ class ICME_GUI(wx.Frame):
             latexScriptData = self.LatexHandler.GenerateLatexScriptData(data, taalName)
             with open('../testFile.tex', 'w') as file:
                 file.write(latexScriptData)
-        call("xelatex.exe -synctex=1 -interaction=nonstopmode -output-directory=../ \"../testFile\".tex")                        
+        call("xelatex -synctex=1 -interaction=nonstopmode -output-directory=" + dlg.GetPath() + " ../testFile.tex")
         
 app = wx.App(redirect=True)   # Error messages go to popup window
 top = ICME_GUI("ICM Editor")
